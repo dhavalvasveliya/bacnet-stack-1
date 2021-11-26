@@ -64,12 +64,12 @@ bool send_to_msgbox(
 
 BACMSG *recv_from_msgbox(
     MSGBOX_ID src,
-    BACMSG * msg)
+    BACMSG * msg, int flags)
 {
 
     int recv_bytes;
 
-    recv_bytes = msgrcv(src, msg, sizeof(BACMSG)-sizeof(MSGTYPE), 0, IPC_NOWAIT);
+    recv_bytes = msgrcv(src, msg, sizeof(BACMSG)-sizeof(MSGTYPE), 0, flags);
     if (recv_bytes > 0) {
         return msg;
     } else {
