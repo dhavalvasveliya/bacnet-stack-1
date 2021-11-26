@@ -98,8 +98,6 @@ int main(
     int argc,
     char *argv[])
 {
-    printf("I am router\n");
-
     ROUTER_PORT *port;
     BACMSG msg_storage, *bacmsg = NULL;
     MSG_DATA *msg_data = NULL;
@@ -130,8 +128,8 @@ int main(
                 break;
             }
         }
-
-        bacmsg = recv_from_msgbox(head->main_id, &msg_storage);
+          // blocking dequeue here
+        bacmsg = recv_from_msgbox(head->main_id, &msg_storage, 0);
         if (bacmsg) {
             switch (bacmsg->type) {
                 case DATA:
@@ -145,7 +143,7 @@ int main(
                             break;
                         }
 
-                        print_msg(bacmsg);
+                        //print_msg(bacmsg);
 
                         if (is_network_msg(bacmsg)) {
                             buff_len =
@@ -172,7 +170,7 @@ int main(
                             msg_storage.type = DATA;
                             msg_storage.data = msg_data;
 
-                            print_msg(bacmsg);
+                            //print_msg(bacmsg);
 
                             if (is_network_msg(bacmsg)) {
                                 msg_data->ref_count = 1;
@@ -279,13 +277,13 @@ bool parse_cmd(
 
                 /* create new list node to store port information */
                 if (head == NULL) {
-                    head = (ROUTER_PORT *) malloc(sizeof(ROUTER_PORT));
+                    head = (ROUTER_PORT *)calloc(sizeof(ROUTER_PORT), 1);
                     head->next = NULL;
                     current = head;
                 } else {
                     ROUTER_PORT *tmp = current;
                     current = current->next;
-                    current = (ROUTER_PORT *) malloc(sizeof(ROUTER_PORT));
+                    head = (ROUTER_PORT *)calloc(sizeof(ROUTER_PORT), 1);
                     current->next = NULL;
                     tmp->next = current;
                 }
