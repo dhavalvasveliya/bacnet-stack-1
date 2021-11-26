@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ipc.h>
 #include "ipmodule.h"
 #include "bacint.h"
 
@@ -84,7 +85,7 @@ void *dl_ip_thread(
     while (!shutdown) {
 
         /* check for incoming messages */
-        bacmsg = recv_from_msgbox(port->port_id, &msg_storage);
+         bacmsg = recv_from_msgbox(port->port_id, &msg_storage, IPC_NOWAIT);
 
         if (bacmsg) {
             switch (bacmsg->type) {
@@ -187,6 +188,15 @@ bool dl_ip_init(
     if (status < 0) {
         close(ip_data->socket);
         return false;
+    }
+    
+      /* Bind to device so we don't get routing loops between our
+       different ports. */
+    status = setsockopt(ip_data->socket, SOL_SOCKET, SO_BINDTODEVICE,
+                        port->iface, strlen(port->iface));
+    if (status < 0) {
+      close(ip_data->socket);
+      return false;
     }
 
     /* bind the socket to the local port number */
